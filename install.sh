@@ -113,6 +113,39 @@ mkdir -p "$(dirname "$NVIM_DST")"
 cp -r "$NVIM_SRC" "$NVIM_DST"
 c_ok "Config copied."
 
+# ---------- install nerd font ----------
+install_nerd_font() {
+    local font_dir="$HOME/.local/share/fonts/JetBrainsMonoNF"
+    if fc-list | grep -qi "JetBrainsMono Nerd Font"; then
+        c_ok "JetBrainsMono Nerd Font already installed — skipping."
+        return
+    fi
+    c_info "Downloading JetBrainsMono Nerd Font..."
+    mkdir -p "$font_dir"
+    local url="https://github.com/ryanoasis/nerd-fonts/releases/download/v3.2.1/JetBrainsMono.zip"
+    curl -fLo "$font_dir/JetBrainsMono.zip" "$url"
+    unzip -o "$font_dir/JetBrainsMono.zip" "*.ttf" -d "$font_dir"
+    rm "$font_dir/JetBrainsMono.zip"
+    fc-cache -f "$font_dir"
+    c_ok "JetBrainsMono Nerd Font installed."
+
+    # Apply to GNOME Terminal if dconf is available
+    if command -v dconf >/dev/null 2>&1; then
+        local profile
+        profile="$(dconf list /org/gnome/terminal/legacy/profiles:/ 2>/dev/null | grep -o '[^/]*' | head -1)"
+        local base="/org/gnome/terminal/legacy/profiles:/${profile:+$profile/}"
+        dconf write "${base}use-system-font" "false" 2>/dev/null || true
+        dconf write "${base}font" "'JetBrainsMono Nerd Font Mono 12'" 2>/dev/null || true
+        c_ok "GNOME Terminal font set to JetBrainsMono Nerd Font Mono 12."
+        c_warn "Restart your terminal for the font change to take effect."
+    else
+        c_warn "Set your terminal font to 'JetBrainsMono Nerd Font Mono 12' manually."
+    fi
+}
+
+c_info "Installing NerdFont..."
+install_nerd_font
+
 # ---------- headless sync of plugins ----------
 c_info "Running headless LazyVim sync (this may take a few minutes)..."
 nvim --headless "+Lazy! restore" +qa || c_warn "Lazy restore had non-zero exit — continuing."
