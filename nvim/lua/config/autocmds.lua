@@ -6,3 +6,37 @@
 --
 -- Or remove existing autocmds by their group name (which is prefixed with `lazyvim_` for the defaults)
 -- e.g. vim.api.nvim_del_augroup_by_name("lazyvim_wrap_spell")
+
+-- Force-disable every diagnostic visual (no underlines, virtual text, or signs).
+-- This runs after LazyVim has set up the LSP, so it reliably wins over the
+-- defaults. Treesitter syntax highlighting is untouched.
+local function disable_diagnostics()
+  vim.diagnostic.config({
+    underline = false,
+    virtual_text = false,
+    signs = false,
+    update_in_insert = false,
+  })
+end
+vim.api.nvim_create_autocmd("User", { pattern = "VeryLazy", callback = disable_diagnostics })
+vim.api.nvim_create_autocmd("LspAttach", { callback = disable_diagnostics })
+
+-- Persist the chosen colorscheme across sessions.
+-- Saves whenever the colorscheme changes; it is loaded back on startup in
+-- lua/plugins/colorscheme.lua. Pick a theme however you like (e.g. <leader>uC)
+-- and it will be remembered next time you open nvim.
+local colorscheme_state = vim.fn.stdpath("state") .. "/last_colorscheme"
+vim.api.nvim_create_autocmd("ColorScheme", {
+  group = vim.api.nvim_create_augroup("persist_colorscheme", { clear = true }),
+  callback = function(ev)
+    local name = ev.match or vim.g.colors_name
+    if not name or name == "" then
+      return
+    end
+    local fd = io.open(colorscheme_state, "w")
+    if fd then
+      fd:write(name)
+      fd:close()
+    end
+  end,
+})

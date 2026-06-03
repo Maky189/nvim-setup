@@ -155,3 +155,13 @@ nvim --headless "+Lazy! sync"    +qa || c_warn "Lazy sync had non-zero exit — 
 nvim --headless "+MasonUpdate" +qa 2>/dev/null || true
 
 c_ok "Done! Launch with:  nvim"
+
+# ---------- post-install notes ----------
+printf '\n'
+c_info "Config notes:"
+c_info "  • AI agent: Claude is the sidebar coding agent (avante). Export your key:"
+c_info "      export ANTHROPIC_API_KEY=\"sk-ant-...\"   # add to ~/.bashrc to persist"
+c_info "  • Copilot is installed but OFF. Enable it anytime with  <leader>cp"
+c_info "      (first run only:  :Copilot auth)"
+c_info "  • Themes persist automatically — pick one with <leader>uC and it's remembered."
+c_info "  • Diagnostics (underlines/linters) are disabled; only syntax highlighting shows."
