@@ -159,8 +159,15 @@ c_ok "Done! Launch with:  nvim"
 # ---------- post-install notes ----------
 printf '\n'
 c_info "Config notes:"
-c_info "  • AI agent: Claude is the sidebar coding agent (avante). Export your key:"
-c_info "      export ANTHROPIC_API_KEY=\"sk-ant-...\"   # add to ~/.bashrc to persist"
+c_info "  • AI agent: Claude Code (uses your Claude subscription, not the API)."
+if ! command -v claude >/dev/null 2>&1; then
+    c_warn "      The 'claude' CLI was not found on PATH. Install it, e.g.:"
+    c_warn "        npm install -g @anthropic-ai/claude-code"
+fi
+c_info "      Log in once:  run 'claude', then /login and pick your account."
+c_info "      In nvim, toggle the Claude sidebar with  <leader>ac"
+c_info "  • avante (Claude via paid API) is disabled. Re-enable in"
+c_info "      lua/plugins/avante.lua (needs ANTHROPIC_API_KEY) if you prefer the API."
 c_info "  • Copilot is installed but OFF. Enable it anytime with  <leader>cp"
 c_info "      (first run only:  :Copilot auth)"
 c_info "  • Themes persist automatically — pick one with <leader>uC and it's remembered."
