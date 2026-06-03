@@ -26,8 +26,6 @@ I want my editor to stay out of my way. A few principles drive the whole config:
 - **My theme follows me.** Whatever colorscheme I pick is remembered across
   sessions automatically.
 
-I mostly live in Lua (for this config) and C/C++ (I keep a DAP debug setup wired
-up for it), with the usual LazyVim language tooling available on demand.
 
 ## How it's configured
 
