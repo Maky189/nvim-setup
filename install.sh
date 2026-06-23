@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Installs Neovim + this LazyVim config on any Linux distribution.
+# On Windows (Git Bash / MSYS / Cygwin) it hands off to install.ps1.
 # Usage:  ./install.sh
 set -euo pipefail
 
@@ -11,6 +12,32 @@ c_info()  { printf '\033[1;34m[*]\033[0m %s\n' "$*"; }
 c_ok()    { printf '\033[1;32m[+]\033[0m %s\n' "$*"; }
 c_warn()  { printf '\033[1;33m[!]\033[0m %s\n' "$*"; }
 c_err()   { printf '\033[1;31m[x]\033[0m %s\n' "$*" >&2; }
+
+# ---------- detect Windows and delegate to PowerShell ----------
+# When run under Git Bash / MSYS / Cygwin / WSL-on-Windows, the native install
+# path is PowerShell. Detect that and hand off to install.ps1.
+case "$(uname -s 2>/dev/null || echo unknown)" in
+    MINGW*|MSYS*|CYGWIN*|Windows_NT)
+        c_info "Windows environment detected — handing off to install.ps1"
+        if command -v powershell.exe >/dev/null 2>&1; then
+            PS="powershell.exe"
+        elif command -v pwsh.exe >/dev/null 2>&1; then
+            PS="pwsh.exe"
+        elif command -v pwsh >/dev/null 2>&1; then
+            PS="pwsh"
+        else
+            c_err "Could not find powershell.exe or pwsh on PATH. Run install.ps1 manually."
+            exit 1
+        fi
+        # Translate the script path to a Windows path so PowerShell can find it.
+        if command -v cygpath >/dev/null 2>&1; then
+            PS_SCRIPT="$(cygpath -w "$SCRIPT_DIR/install.ps1")"
+        else
+            PS_SCRIPT="$SCRIPT_DIR/install.ps1"
+        fi
+        exec "$PS" -NoProfile -ExecutionPolicy Bypass -File "$PS_SCRIPT"
+        ;;
+esac
 
 # ---------- detect package manager ----------
 detect_pm() {

@@ -12,10 +12,34 @@ return {
   dependencies = { "folke/snacks.nvim" },
   opts = {
     -- Resolve the `claude` binary robustly: prefer PATH, fall back to the
-    -- usual local install location (avoids "claude not found" if PATH is thin).
+    -- usual local install locations (avoids "claude not found" if PATH is thin).
     terminal_cmd = (function()
       local p = vim.fn.exepath("claude")
-      return p ~= "" and p or vim.fn.expand("~/.local/bin/claude")
+      if p ~= "" then
+        return p
+      end
+      -- Per-OS fallback locations when `claude` isn't on PATH.
+      local candidates
+      if vim.fn.has("win32") == 1 then
+        candidates = {
+          "~/.local/bin/claude.exe",
+          "~/AppData/Roaming/npm/claude.cmd", -- npm global install
+          "~/AppData/Local/Programs/claude/claude.exe",
+        }
+      else
+        candidates = {
+          "~/.local/bin/claude",
+          "~/.npm-global/bin/claude", -- npm global install
+        }
+      end
+      for _, c in ipairs(candidates) do
+        local full = vim.fn.expand(c)
+        if vim.fn.executable(full) == 1 then
+          return full
+        end
+      end
+      -- Last resort: bare name, let the shell resolve it.
+      return "claude"
     end)(),
   },
   keys = {
