@@ -112,25 +112,27 @@ New-Item -ItemType Directory -Force -Path (Split-Path -Parent $NvimDst) | Out-Nu
 Copy-Item -Recurse -Force -LiteralPath $NvimSrc -Destination $NvimDst
 Ok "Config copied."
 
-# ---------- install nerd font (current user) ----------
-function Install-NerdFont {
-    $fontName = 'JetBrainsMono Nerd Font'
-    $installed = Get-ChildItem -Path "$env:LOCALAPPDATA\Microsoft\Windows\Fonts" -Filter '*JetBrainsMono*NerdFont*.ttf' -ErrorAction SilentlyContinue
+# ---------- install nerd font symbols (current user, fallback only) ----------
+# Installs the "Symbols Only" Nerd Font: icon glyphs with no letters. Your
+# terminal font is NOT changed.
+function Install-NerdSymbols {
+    $fontName = 'Symbols Nerd Font'
+    $userFontDir = "$env:LOCALAPPDATA\Microsoft\Windows\Fonts"
+    $installed = Get-ChildItem -Path $userFontDir -Filter '*SymbolsNerdFont*.ttf' -ErrorAction SilentlyContinue
     if ($installed) {
         Ok "$fontName already installed - skipping."
         return
     }
 
-    Info "Downloading $fontName..."
-    $tmp = Join-Path ([System.IO.Path]::GetTempPath()) "JetBrainsMonoNF"
+    Info "Downloading $fontName (your terminal font is not changed)..."
+    $tmp = Join-Path ([System.IO.Path]::GetTempPath()) "NerdSymbols"
     New-Item -ItemType Directory -Force -Path $tmp | Out-Null
-    $zip = Join-Path $tmp 'JetBrainsMono.zip'
-    $url = 'https://github.com/ryanoasis/nerd-fonts/releases/download/v3.2.1/JetBrainsMono.zip'
+    $zip = Join-Path $tmp 'symbols.zip'
+    $url = 'https://github.com/ryanoasis/nerd-fonts/releases/download/v3.2.1/NerdFontsSymbolsOnly.zip'
     Invoke-WebRequest -Uri $url -OutFile $zip
     Expand-Archive -Path $zip -DestinationPath $tmp -Force
 
     # Per-user font install (no admin required): copy to local Fonts and register.
-    $userFontDir = "$env:LOCALAPPDATA\Microsoft\Windows\Fonts"
     New-Item -ItemType Directory -Force -Path $userFontDir | Out-Null
     $regKey = 'HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts'
 
@@ -142,11 +144,11 @@ function Install-NerdFont {
     }
     Remove-Item -Recurse -Force $tmp
     Ok "$fontName installed for the current user."
-    Warn "Set your terminal font to 'JetBrainsMono Nerd Font Mono' (restart the terminal to see it)."
+    Warn "Restart your terminal. If icons show as boxes, add a fallback font, e.g. in Windows Terminal set the font face to 'YourFont, Symbols Nerd Font Mono'."
 }
 
-Info "Installing NerdFont..."
-try { Install-NerdFont } catch { Warn "Nerd Font install failed: $($_.Exception.Message)" }
+Info "Installing Nerd Font symbols..."
+try { Install-NerdSymbols } catch { Warn "Symbols font install failed: $($_.Exception.Message)" }
 
 # ---------- headless sync of plugins ----------
 Info "Running headless LazyVim sync (this may take a few minutes)..."

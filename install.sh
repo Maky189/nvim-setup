@@ -140,38 +140,28 @@ mkdir -p "$(dirname "$NVIM_DST")"
 cp -r "$NVIM_SRC" "$NVIM_DST"
 c_ok "Config copied."
 
-# ---------- install nerd font ----------
-install_nerd_font() {
-    local font_dir="$HOME/.local/share/fonts/JetBrainsMonoNF"
-    if fc-list | grep -qi "JetBrainsMono Nerd Font"; then
-        c_ok "JetBrainsMono Nerd Font already installed — skipping."
+# ---------- install nerd font symbols (fallback only) ----------
+# Installs the "Symbols Only" Nerd Font: icon glyphs with no letters. Terminals
+# fall back to it for icons, so the user's own terminal font is left untouched.
+install_nerd_symbols() {
+    local font_dir="$HOME/.local/share/fonts/NerdFontsSymbols"
+    if fc-list | grep -qi "Symbols Nerd Font"; then
+        c_ok "Symbols Nerd Font already installed — skipping."
         return
     fi
-    c_info "Downloading JetBrainsMono Nerd Font..."
+    c_info "Downloading Symbols Nerd Font (your terminal font is not changed)..."
     mkdir -p "$font_dir"
-    local url="https://github.com/ryanoasis/nerd-fonts/releases/download/v3.2.1/JetBrainsMono.zip"
-    curl -fLo "$font_dir/JetBrainsMono.zip" "$url"
-    unzip -o "$font_dir/JetBrainsMono.zip" "*.ttf" -d "$font_dir"
-    rm "$font_dir/JetBrainsMono.zip"
+    local url="https://github.com/ryanoasis/nerd-fonts/releases/download/v3.2.1/NerdFontsSymbolsOnly.zip"
+    curl -fLo "$font_dir/symbols.zip" "$url"
+    unzip -o "$font_dir/symbols.zip" "*.ttf" -d "$font_dir"
+    rm "$font_dir/symbols.zip"
     fc-cache -f "$font_dir"
-    c_ok "JetBrainsMono Nerd Font installed."
-
-    # Apply to GNOME Terminal if dconf is available
-    if command -v dconf >/dev/null 2>&1; then
-        local profile
-        profile="$(dconf list /org/gnome/terminal/legacy/profiles:/ 2>/dev/null | grep -o '[^/]*' | head -1)"
-        local base="/org/gnome/terminal/legacy/profiles:/${profile:+$profile/}"
-        dconf write "${base}use-system-font" "false" 2>/dev/null || true
-        dconf write "${base}font" "'JetBrainsMono Nerd Font Mono 12'" 2>/dev/null || true
-        c_ok "GNOME Terminal font set to JetBrainsMono Nerd Font Mono 12."
-        c_warn "Restart your terminal for the font change to take effect."
-    else
-        c_warn "Set your terminal font to 'JetBrainsMono Nerd Font Mono 12' manually."
-    fi
+    c_ok "Symbols Nerd Font installed."
+    c_warn "Restart your terminal so icons render via font fallback."
 }
 
-c_info "Installing NerdFont..."
-install_nerd_font
+c_info "Installing Nerd Font symbols..."
+install_nerd_symbols || c_warn "Symbols font install failed — icons may show as boxes."
 
 # ---------- headless sync of plugins ----------
 c_info "Running headless LazyVim sync (this may take a few minutes)..."

@@ -43,7 +43,7 @@ Built on LazyVim, with these deliberate customizations of mine:
 | **Debugging** | `nvim-dap` configured for C/C++ via `cppdbg` / `OpenDebugAD7` (`lua/plugins/dap.lua`). |
 | **Dashboard** | Custom snacks dashboard header (`lua/plugins/snacks.lua`). |
 | **Discord** | Rich presence via `neocord` (`lua/plugins/presence.lua`). |
-| **Font** | JetBrainsMono Nerd Font, installed and applied by `install.sh`. |
+| **Font** | Uses your own terminal font. `install.sh` only adds the "Symbols Only" Nerd Font so icons render via fallback; your terminal font is never changed. |
 
 ## Extensions I use
 
@@ -129,7 +129,7 @@ nvim
 
 The installer detects the distro's package manager (apt / dnf / pacman / zypper /
 apk), installs Neovim plus the build/runtime dependencies LazyVim needs, installs
-and applies JetBrainsMono Nerd Font, backs up any existing config, copies this
+the Symbols Only Nerd Font (icon fallback; your terminal font is untouched), backs up any existing config, copies this
 one into place, and runs a headless `Lazy restore` + `Lazy sync` so plugins are
 pinned to the same versions as on my source machine.
 
